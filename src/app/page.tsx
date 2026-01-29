@@ -77,7 +77,11 @@ export default function Home() {
         filteredCount={filteredHighlights.length}
       />
 
-      <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        notionSettings={notionSettings}
+      />
 
       {/* Floating Merge Action */}
       {selectedHighlights.size > 1 && (

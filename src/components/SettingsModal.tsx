@@ -1,17 +1,18 @@
 import { useState } from "react";
 import { Database, Plus, Trash2, Check, X, Moon, Laptop, Sun, Settings, HelpCircle, ChevronDown, ExternalLink, Pencil } from "lucide-react";
 import { NotionPageSelector } from "@/components/NotionPageSelector";
-import { useNotionSettings } from "@/hooks/useNotionSettings";
+import { useNotionSettings, NotionSettings } from "@/hooks/useNotionSettings";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 
 interface SettingsModalProps {
     isOpen: boolean;
     onClose: () => void;
+    notionSettings: NotionSettings;
 }
 
-export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
-    const { profiles, addProfile, removeProfile, updateProfile, addPageToProfile, removePageFromProfile } = useNotionSettings();
+export function SettingsModal({ isOpen, onClose, notionSettings }: SettingsModalProps) {
+    const { profiles, addProfile, removeProfile, updateProfile, addPageToProfile, removePageFromProfile } = notionSettings;
     const { theme, setTheme } = useTheme();
     const [activeTab, setActiveTab] = useState<"general" | "notion">("notion");
 

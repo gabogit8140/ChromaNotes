@@ -15,6 +15,8 @@ interface AppHeaderProps {
     filteredCount: number;
 }
 
+import { useState } from "react";
+
 export function AppHeader({
     data,
     onReset,
@@ -27,6 +29,7 @@ export function AppHeader({
     filteredCount
 }: AppHeaderProps) {
     const { activeProfile, activePage, profiles, setActiveProfileId, setActivePageId } = notionSettings;
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
 
     return (
         <header className="sticky top-0 z-50 backdrop-blur-xl bg-white/70 dark:bg-black/70 border-b border-zinc-200 dark:border-zinc-800 transition-all">
@@ -41,57 +44,71 @@ export function AppHeader({
 
                 {data && (
                     <div className="flex items-center gap-2 sm:gap-4">
-                        <button
-                            onClick={onReset}
-                            className="text-sm font-medium text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
-                            title="New File"
-                        >
-                            <span className="hidden sm:inline">New File</span>
-                            <FilePlus className="w-5 h-5 sm:hidden" />
-                        </button>
+
 
                         <div className="flex flex-col items-end">
                             <div className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider mb-1 hidden sm:block">Target Page</div>
                             {profiles.length > 0 && (
-                                <div className="relative group">
-                                    <button className="flex items-center gap-2 px-3 py-2 bg-zinc-100 dark:bg-zinc-800 rounded-lg text-xs font-medium text-zinc-900 dark:text-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors border border-transparent hover:border-zinc-300 dark:hover:border-zinc-600">
+                                <div className="relative">
+                                    {isProfileOpen && (
+                                        <div
+                                            className="fixed inset-0 z-40"
+                                            onClick={() => setIsProfileOpen(false)}
+                                        />
+                                    )}
+                                    <button
+                                        onClick={() => setIsProfileOpen(!isProfileOpen)}
+                                        className={cn(
+                                            "flex items-center gap-2 px-3 py-2 bg-zinc-100 dark:bg-zinc-800 rounded-lg text-xs font-medium transition-colors border relative z-50",
+                                            isProfileOpen
+                                                ? "bg-zinc-200 dark:bg-zinc-700 border-zinc-300 dark:border-zinc-600 text-zinc-900 dark:text-zinc-100"
+                                                : "text-zinc-900 dark:text-zinc-100 border-transparent hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600"
+                                        )}
+                                    >
                                         <Database className="w-3 h-3 text-indigo-500" />
                                         <span className="max-w-[150px] truncate">{activePage?.title || "Select Page"}</span>
-                                        <ChevronDown className="w-3 h-3 opacity-50" />
+                                        <ChevronDown className={cn("w-3 h-3 opacity-50 transition-transform", isProfileOpen && "rotate-180")} />
                                     </button>
-                                    <div className="absolute right-0 top-full mt-2 w-64 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xl overflow-hidden hidden group-hover:block z-50 p-1 max-h-80 overflow-y-auto">
-                                        {profiles.map(p => (
-                                            <div key={p.id} className="mb-1">
-                                                <div className="px-2 py-1 text-[10px] font-bold text-zinc-400 uppercase tracking-wider">{p.name}</div>
-                                                {p.pages.map(page => (
-                                                    <button
-                                                        key={page.id}
-                                                        onClick={() => {
-                                                            setActiveProfileId(p.id);
-                                                            setActivePageId(page.id);
-                                                        }}
-                                                        className={cn(
-                                                            "w-full text-left px-3 py-2 text-xs rounded-lg transition-colors flex items-center justify-between group/item pl-4",
-                                                            activePage?.id === page.id && activeProfile?.id === p.id
-                                                                ? "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 font-medium"
-                                                                : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                                                        )}
-                                                    >
-                                                        <span className="truncate">{page.title}</span>
-                                                        {activePage?.id === page.id && activeProfile?.id === p.id && <CheckCircle className="w-3 h-3" />}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        ))}
-                                        <div className="h-px bg-zinc-100 dark:bg-zinc-800 my-1" />
-                                        <button
-                                            onClick={onOpenSettings}
-                                            className="w-full text-left px-3 py-2 text-xs rounded-lg text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors flex items-center gap-2"
-                                        >
-                                            <Settings className="w-3 h-3" />
-                                            Manage Profiles
-                                        </button>
-                                    </div>
+
+                                    {isProfileOpen && (
+                                        <div className="absolute right-0 top-full mt-2 w-64 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xl overflow-hidden z-50 p-1 max-h-80 overflow-y-auto animate-in fade-in zoom-in-95 duration-100">
+                                            {profiles.map(p => (
+                                                <div key={p.id} className="mb-1">
+                                                    <div className="px-2 py-1 text-[10px] font-bold text-zinc-400 uppercase tracking-wider">{p.name}</div>
+                                                    {p.pages.map(page => (
+                                                        <button
+                                                            key={page.id}
+                                                            onClick={() => {
+                                                                setActiveProfileId(p.id);
+                                                                setActivePageId(page.id);
+                                                                setIsProfileOpen(false);
+                                                            }}
+                                                            className={cn(
+                                                                "w-full text-left px-3 py-2 text-xs rounded-lg transition-colors flex items-center justify-between group/item pl-4",
+                                                                activePage?.id === page.id && activeProfile?.id === p.id
+                                                                    ? "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 font-medium"
+                                                                    : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                                                            )}
+                                                        >
+                                                            <span className="truncate">{page.title}</span>
+                                                            {activePage?.id === page.id && activeProfile?.id === p.id && <CheckCircle className="w-3 h-3" />}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            ))}
+                                            <div className="h-px bg-zinc-100 dark:bg-zinc-800 my-1" />
+                                            <button
+                                                onClick={() => {
+                                                    onOpenSettings();
+                                                    setIsProfileOpen(false);
+                                                }}
+                                                className="w-full text-left px-3 py-2 text-xs rounded-lg text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors flex items-center gap-2"
+                                            >
+                                                <Settings className="w-3 h-3" />
+                                                Manage Profiles
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -142,6 +159,15 @@ export function AppHeader({
                                 View
                             </a>
                         )}
+
+                        <button
+                            onClick={onReset}
+                            className="flex items-center gap-2 px-3 py-2 bg-zinc-100 dark:bg-zinc-800 rounded-lg text-xs font-medium text-zinc-900 dark:text-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors group"
+                            title="New File"
+                        >
+                            <FilePlus className="w-3.5 h-3.5 text-zinc-500 group-hover:text-indigo-500 transition-colors" />
+                            <span className="hidden sm:inline">New File</span>
+                        </button>
                     </div>
                 )}
 
