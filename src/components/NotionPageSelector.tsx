@@ -46,7 +46,7 @@ export function NotionPageSelector({ token, value, onChange }: NotionPageSelecto
             const results = await notionClient.searchPages(token, searchQuery);
             setResults(results);
         } catch (err: any) {
-            setError("Failed to search pages");
+            setError(err.message || "Failed to search pages");
             console.error(err);
         } finally {
             setIsLoading(false);
@@ -85,7 +85,23 @@ export function NotionPageSelector({ token, value, onChange }: NotionPageSelecto
                     </div>
 
                     <div className="max-h-60 overflow-y-auto p-1">
-                        {results.length === 0 && !isLoading && query && (
+                        {error && (
+                            <div className="p-3 text-center text-xs text-red-500 bg-red-50 dark:bg-red-900/10 mx-2 rounded mb-2">
+                                {error}
+                                {error.includes("cors-anywhere") && (
+                                    <a
+                                        href="https://cors-anywhere.herokuapp.com/corsdemo"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="block mt-2 font-bold underline text-indigo-600 dark:text-indigo-400"
+                                    >
+                                        Request Access Here
+                                    </a>
+                                )}
+                            </div>
+                        )}
+
+                        {results.length === 0 && !isLoading && !error && query && (
                             <div className="p-3 text-center text-xs text-zinc-500">No pages found</div>
                         )}
 
