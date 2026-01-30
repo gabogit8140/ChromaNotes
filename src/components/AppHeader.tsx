@@ -36,7 +36,7 @@ export function AppHeader({
             {/* MATCHING WIDTH: max-w-4xl to align with cards */}
             <div className="max-w-4xl mx-auto px-6 h-24 flex items-center justify-between">
                 <div className="flex items-center gap-3 cursor-pointer" onClick={onReset}>
-                    <img src="/logo.png" alt="ChromaNotes Logo" className="w-10 h-10 rounded-xl" />
+                    <img src="/ChromaNotes/logo.png" alt="ChromaNotes Logo" className="w-10 h-10 rounded-xl" />
                     <h1 className="font-bold text-2xl tracking-tight text-zinc-900 dark:text-white hidden sm:block">
                         ChromaNotes
                     </h1>
