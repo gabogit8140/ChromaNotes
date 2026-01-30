@@ -95,20 +95,30 @@ async function notionFetch(token: string, endpoint: string, options: RequestInit
         headers,
     });
 
-    // Handle Proxy Activation Requirement
+    // Handle Proxy Activation Requirement specifically for 403
     if (response.status === 403) {
         const text = await response.text();
         if (text.includes("cors-anywhere")) {
             throw new Error("CORS Proxy Check Required. Please visit https://cors-anywhere.herokuapp.com/corsdemo to verify your browser.");
         }
+        // If it's a different 403, try to parse it as JSON or throw generic
+        try {
+            const errorJson = JSON.parse(text);
+            throw new Error(errorJson.message || errorJson.error || "Notion API Forbidden");
+        } catch (e: any) {
+            if (e.message && e.message.includes("CORS Proxy Check")) throw e;
+            throw new Error("Notion API Forbidden: " + text);
+        }
     }
 
-    const data = await response.json();
-
+    // For other non-OK statuses
     if (!response.ok) {
+        const data = await response.json().catch(() => ({ message: "Unknown Error" }));
         throw new Error(data.message || data.error || "Notion API Error");
     }
 
+    // Happy path
+    const data = await response.json();
     return data;
 }
 
