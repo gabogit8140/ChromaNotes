@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ParsedPDF, Highlight } from '@/lib/pdf-parsing';
 import { NotionSettings } from '@/hooks/useNotionSettings';
+import { notionClient, generateHighlightBlocks } from "@/lib/notion-client";
 
 interface UseNotionExportProps {
     activeProfile: NotionSettings['activeProfile'];
@@ -21,6 +22,10 @@ export function useNotionExport({
     const [exportProgress, setExportProgress] = useState(0);
     const [exportUrl, setExportUrl] = useState<string | null>(null);
 
+
+
+    // ... inside hook ...
+
     const handleExport = async () => {
         if (!activeProfile || !data) {
             setIsSettingsOpen(true);
@@ -37,20 +42,8 @@ export function useNotionExport({
 
         try {
             // 1. Create Page
-            const createRes = await fetch("/api/notion", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    token,
-                    action: 'create',
-                    pageId,
-                    title: data.title
-                })
-            });
-            const createJson = await createRes.json();
-            if (!createRes.ok) throw new Error(createJson.error);
-            const newPageId = createJson.pageId;
-            successUrl = createJson.url;
+            const { pageId: newPageId, url } = await notionClient.createPage(token, pageId, data.title);
+            successUrl = url;
             setExportUrl(successUrl);
             setExportProgress(5);
 
@@ -79,17 +72,21 @@ export function useNotionExport({
                     const chunk = pageHighlights.slice(i, i + BATCH_SIZE);
                     const isFirstChunk = i === 0;
 
-                    await fetch("/api/notion", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            token,
-                            action: 'append_page',
-                            blockId: newPageId,
-                            pageNumber: isFirstChunk ? pageNum : undefined,
-                            highlights: chunk
-                        })
-                    });
+                    const blocks = [];
+                    // Add Page Header
+                    if (isFirstChunk) {
+                        blocks.push({
+                            object: 'block',
+                            type: 'heading_2',
+                            heading_2: {
+                                rich_text: [{ type: 'text', text: { content: `Page ${pageNum}` } }]
+                            }
+                        });
+                    }
+
+                    blocks.push(...generateHighlightBlocks(chunk));
+
+                    await notionClient.appendChildren(token, newPageId, blocks);
 
                     completedBatches++;
                     const percent = 5 + Math.round((completedBatches / totalBatches) * 95);

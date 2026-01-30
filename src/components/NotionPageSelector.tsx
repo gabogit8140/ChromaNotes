@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { Loader2, Search, Check, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+import { notionClient } from "@/lib/notion-client";
+
 interface NotionPageSelectorProps {
     token: string;
     value: string;
@@ -33,19 +35,17 @@ export function NotionPageSelector({ token, value, onChange }: NotionPageSelecto
         return () => clearTimeout(timer);
     }, [query, token, isOpen]);
 
+
+
+    // ... inside component ...
+
     const performSearch = async (searchQuery: string) => {
         setIsLoading(true);
         setError(null);
         try {
-            const res = await fetch("/api/notion/search", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ token, query: searchQuery }),
-            });
-            const data = await res.json();
-            if (data.error) throw new Error(data.error);
-            setResults(data.results);
-        } catch (err) {
+            const results = await notionClient.searchPages(token, searchQuery);
+            setResults(results);
+        } catch (err: any) {
             setError("Failed to search pages");
             console.error(err);
         } finally {
