@@ -98,7 +98,7 @@ async function notionFetch(token: string, endpoint: string, options: RequestInit
     // Handle Proxy Activation Requirement specifically for 403
     if (response.status === 403) {
         const text = await response.text();
-        if (text.includes("cors-anywhere")) {
+        if (text.includes("cors-anywhere") || text.includes("/corsdemo")) {
             throw new Error("CORS Proxy Check Required. Please visit https://cors-anywhere.herokuapp.com/corsdemo to verify your browser.");
         }
         // If it's a different 403, try to parse it as JSON or throw generic
