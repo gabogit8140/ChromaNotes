@@ -16,11 +16,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "ChromaNotes",
   description: "Extract highlights from PDFs to Notion",
-  manifest: "/manifest.json",
+  manifest: "/ChromaNotes/manifest.json",
   icons: {
-    icon: "/icon-512.png",
-    shortcut: "/icon-512.png",
-    apple: "/icon-512.png",
+    icon: "/ChromaNotes/icon-512.png",
+    shortcut: "/ChromaNotes/icon-512.png",
+    apple: "/ChromaNotes/icon-512.png",
   },
   appleWebApp: {
     capable: true,
