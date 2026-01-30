@@ -12,8 +12,15 @@ const withPWA = withPWAInit({
   },
 });
 
+const isProd = process.env.NODE_ENV === "production";
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  output: "export",
+  basePath: isProd ? "/ChromaNotes" : "",
+  images: {
+    unoptimized: true,
+  },
   // pdfjs-dist requires some webpack config for top-level await usually, or alias
   webpack: (config) => {
     config.resolve.alias.canvas = false;
