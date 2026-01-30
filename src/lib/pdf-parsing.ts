@@ -1,10 +1,16 @@
-import * as pdfjsLib from "pdfjs-dist";
-import { TextItem } from "pdfjs-dist/types/src/display/api";
+import type { TextItem } from "pdfjs-dist/types/src/display/api";
 
-if (typeof window !== "undefined") {
-    // legacy build often safer, but let's try standard build first with 4.4.168
-    pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
-}
+// Removed top-level import and worker initialization to prevent build-time errors
+// import * as pdfjsLib from "pdfjs-dist";
+
+// Helper to initialize worker
+const initPDF = async () => {
+    const pdfjsLib = await import("pdfjs-dist");
+    if (typeof window !== "undefined" && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+    }
+    return pdfjsLib;
+};
 
 export interface Highlight {
     id: string;
@@ -112,11 +118,7 @@ function isContained(itemRect: number[], highlightRect: number[]): boolean {
 
 export async function parsePDF(file: File): Promise<ParsedPDF> {
     // Dynamic import to avoid build-time worker issues
-    const pdfjsLib = await import("pdfjs-dist");
-
-    if (typeof window !== "undefined" && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
-        pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
-    }
+    const pdfjsLib = await initPDF();
 
     const arrayBuffer = await file.arrayBuffer();
     // @ts-ignore
