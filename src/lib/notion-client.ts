@@ -1,5 +1,5 @@
 export const NOTION_API_BASE = "https://api.notion.com/v1";
-export const PROXY_URL = "https://corsproxy.io/?";
+export const PROXY_URL = "https://cors-anywhere.herokuapp.com/";
 
 // Helper to map tag names to Notion colors
 function getNotionColor(tag: string): string {
@@ -81,7 +81,7 @@ export function generateHighlightBlocks(highlights: any[]) {
 }
 
 async function notionFetch(token: string, endpoint: string, options: RequestInit = {}) {
-    const url = `${PROXY_URL}${encodeURIComponent(`${NOTION_API_BASE}${endpoint}`)}`;
+    const url = `${PROXY_URL}${NOTION_API_BASE}${endpoint}`;
 
     const headers = {
         "Authorization": `Bearer ${token}`,
@@ -94,6 +94,14 @@ async function notionFetch(token: string, endpoint: string, options: RequestInit
         ...options,
         headers,
     });
+
+    // Handle Proxy Activation Requirement
+    if (response.status === 403) {
+        const text = await response.text();
+        if (text.includes("cors-anywhere")) {
+            throw new Error("CORS Proxy Check Required. Please visit https://cors-anywhere.herokuapp.com/corsdemo to verify your browser.");
+        }
+    }
 
     const data = await response.json();
 
