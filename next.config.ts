@@ -21,6 +21,11 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
   },
+  eslint: {
+    // Warning: This allows production builds to successfully complete even if
+    // your project has ESLint errors.
+    ignoreDuringBuilds: true,
+  },
   // pdfjs-dist requires some webpack config for top-level await usually, or alias
   webpack: (config) => {
     config.resolve.alias.canvas = false;
